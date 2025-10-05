@@ -254,36 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Sonuç gösterimi kaldırıldı
             const SizedBox(height: 24),
 
-            // Bilgi kartı
-            Card(
-              elevation: 0,
-              color: const Color(0xFFF4C430).withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(
-                  color: const Color(0xFFF4C430).withOpacity(0.3),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: const Color(0xFFF4C430),
-                      size: 24,
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Text(
-                        'Bu uygulama geliştirme aşamasındadır. Gerçek API entegrasyonu için ProbabilityService yapılandırması gerekir.',
-                        style: TextStyle(fontSize: 14, fontFamily: 'Roboto'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // API entegrasyon uyarısı kaldırıldı
           ],
         ),
       ),

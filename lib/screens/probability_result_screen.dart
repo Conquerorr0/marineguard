@@ -63,6 +63,51 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
     }
   }
 
+  String _displayNameForEvent(String key) {
+    switch (key) {
+      case 'current_strong':
+        return 'Akıntı';
+      case 'wave_high':
+        return 'Yüksek Dalga';
+      case 'sst_high':
+        return 'Yüksek Deniz Sıcaklığı';
+      case 'ssha_high':
+        return 'Deniz Seviyesi Anomali';
+      case 'storm_high':
+        return 'Fırtına';
+      case 'wind_high':
+        return 'Kuvvetli Rüzgar';
+      case 'fog_low':
+        return 'Sis';
+      case 'rain_high':
+        return 'Yoğun Yağış';
+      default:
+        return key;
+    }
+  }
+
+  Color _themeColorForEvent(String key) {
+    switch (key) {
+      case 'wave_high':
+      case 'current_strong':
+        return const Color(0xFF0288D1); // mavi
+      case 'storm_high':
+        return const Color(0xFFEF6C00); // turuncu
+      case 'wind_high':
+        return const Color(0xFF00796B); // teal
+      case 'rain_high':
+        return const Color(0xFF1565C0); // lacivert
+      case 'fog_low':
+        return const Color(0xFF757575); // gri
+      case 'sst_high':
+        return const Color(0xFFD32F2F); // kırmızı
+      case 'ssha_high':
+        return const Color(0xFF6A1B9A); // mor
+      default:
+        return const Color(0xFF0288D1);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -279,26 +324,67 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
   Widget _buildResult() {
     final r = _resp!;
     final prob = r.probabilities[widget.eventKey];
+    final color = _themeColorForEvent(widget.eventKey);
+    final title = _displayNameForEvent(widget.eventKey);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
-            const SizedBox(height: 16),
-            Center(
-              child: SizedBox(
-                width: 160,
-                height: 160,
-                child: Lottie.asset(
-                  _animationForEvent(widget.eventKey),
-                  fit: BoxFit.contain,
-                  repeat: true,
+            // Üst özet kartı
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color.withOpacity(0.12), Colors.white],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withOpacity(0.2)),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 90,
+                    height: 90,
+                    child: Lottie.asset(
+                      _animationForEvent(widget.eventKey),
+                      fit: BoxFit.contain,
+                      repeat: true,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.roboto(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: color,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Lat: ${widget.location.lat.toStringAsFixed(4)}  |  Lon: ${widget.location.lon.toStringAsFixed(4)}',
+                          style: GoogleFonts.roboto(color: Colors.black87),
+                        ),
+                        Text(
+                          'Tarih: ${widget.date.month}/${widget.date.day}',
+                          style: GoogleFonts.roboto(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             if (r.metadata.syntheticData)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
@@ -309,63 +395,97 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
                   backgroundColor: Colors.orange[100],
                 ),
               ),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Olay: ${widget.eventKey}',
-                      style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (prob == null)
-                      Text(
-                        'Veri yok/hesaplanamadı',
-                        style: GoogleFonts.roboto(color: Colors.red[700]),
-                      )
-                    else ...[
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+            // Büyük yüzdelik gösterimi
+            if (prob == null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    'Veri yok/hesaplanamadı',
+                    style: GoogleFonts.roboto(color: Colors.red[700]),
+                  ),
+                ),
+              )
+            else
+              Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: color.withOpacity(0.2)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      // Dairesel yüzde
+                      SizedBox(
+                        width: 96,
+                        height: 96,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CircularProgressIndicator(
+                              value: prob,
+                              strokeWidth: 10,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                _colorForProb(prob),
+                              ),
+                              backgroundColor: Colors.grey[200],
                             ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0288D1).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '${(prob * 100).toStringAsFixed(1)}%',
-                              style: GoogleFonts.roboto(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF0288D1),
+                            Center(
+                              child: Text(
+                                '${(prob * 100).toStringAsFixed(1)}%',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: color,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: LinearProgressIndicator(
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            LinearProgressIndicator(
                               value: prob,
+                              minHeight: 10,
                               backgroundColor: Colors.grey[200],
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 _colorForProb(prob),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                Chip(
+                                  label: Text(_probabilityLabel(prob)),
+                                  backgroundColor: _colorForProb(
+                                    prob,
+                                  ).withOpacity(0.12),
+                                  labelStyle: GoogleFonts.roboto(
+                                    color: _colorForProb(prob).withOpacity(0.9),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Chip(
+                                  label: const Text('Son 5 yıl verisi'),
+                                  backgroundColor: Colors.blueGrey[50],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
             const SizedBox(height: 12),
             if (r.metadata.customThresholds.isNotEmpty)
               Card(
@@ -390,9 +510,17 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
                 ),
               ),
             const SizedBox(height: 12),
-            Text(
-              'Yakın geçmişe dayalı olasılık (son 5 yıl)',
-              style: GoogleFonts.roboto(color: Colors.grey[700]),
+            Row(
+              children: [
+                const Icon(Icons.info_outline, size: 18, color: Colors.grey),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Yakın geçmişe dayalı olasılık (son 5 yıl). Veriler istatistiksel modelleme ile hesaplanmıştır.',
+                    style: GoogleFonts.roboto(color: Colors.grey[700]),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -429,5 +557,13 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
     if (v < 0.3) return Colors.green;
     if (v < 0.6) return Colors.orange;
     return Colors.red;
+  }
+
+  String _probabilityLabel(double v) {
+    if (v < 0.2) return 'Düşük';
+    if (v < 0.4) return 'Orta-Düşük';
+    if (v < 0.6) return 'Orta';
+    if (v < 0.8) return 'Orta-Yüksek';
+    return 'Yüksek';
   }
 }
