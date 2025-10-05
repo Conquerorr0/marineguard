@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Konum izinleri -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MarineGuard, size en yakın deniz hava durumu tahminleri sunabilmek için konum bilginize ihtiyaç duyar.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>MarineGuard, size en yakın deniz hava durumu tahminleri sunabilmek için konum bilginize ihtiyaç duyar.</string>
+	
+	<!-- Google Maps -->
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 </dict>
 </plist>
