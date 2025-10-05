@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:marineguard/services/probability_service.dart';
 import 'package:marineguard/screens/location_date_screen.dart';
+import 'package:marineguard/screens/event_selection_screen.dart';
 import 'package:marineguard/models/location_date_result.dart';
+import 'package:marineguard/models/api_models.dart';
+import 'package:marineguard/screens/probability_result_screen.dart';
 
 /// Ana ekran - MarineGuard uygulamasının ana sayfası
 class HomeScreen extends StatefulWidget {
@@ -29,33 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  /// Mock veri ile test yap
-  Future<void> _testWithMockData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-      _probabilities = null;
-    });
-
-    try {
-      final result = await _probabilityService.getMockProbabilities([
-        'wind_high',
-        'rain_high',
-        'wave_high',
-        'storm_high',
-      ]);
-
-      setState(() {
-        _probabilities = result;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Hata: $e';
-        _isLoading = false;
-      });
-    }
-  }
+  // Mock test kaldırıldı
 
   /// Konum ve tarih seçim ekranına git
   Future<void> _goToLocationDateScreen() async {
@@ -65,8 +42,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result != null) {
-      // Sonucu göster
-      _showLocationDateResult(result);
+      if (!mounted) return;
+      // Konum/tarih tamamlandıktan sonra event kart ekranına geç
+      final selectedEvent = await Navigator.of(context).push<String>(
+        MaterialPageRoute(builder: (_) => const EventSelectionScreen()),
+      );
+      if (selectedEvent != null && selectedEvent.isNotEmpty) {
+        final loc = LocationInfo(lat: result.lat, lon: result.lon);
+        final date = DateInfo(month: result.month, day: result.day);
+        // ignore: use_build_context_synchronously
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ProbabilityResultScreen(
+              location: loc,
+              date: date,
+              eventKey: selectedEvent,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -254,201 +248,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 24),
 
-            // Hızlı test butonu
-            Card(
-              elevation: 0,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Hızlı Test',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'ProbabilityService\'i test etmek için mock veri kullanın',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _testWithMockData,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0288D1),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : const Text(
-                                'Mock Veri ile Test Et',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Roboto',
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
+            // Hızlı test kaldırıldı
             const SizedBox(height: 24),
 
-            // Sonuçlar
-            if (_probabilities != null || _errorMessage != null) ...[
-              Card(
-                elevation: 0,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Test Sonuçları',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto',
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (_errorMessage != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.red[50],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.red[200]!),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline, color: Colors.red[600]),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage!,
-                                  style: TextStyle(
-                                    color: Colors.red[800],
-                                    fontFamily: 'Roboto',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ] else if (_probabilities != null) ...[
-                        ..._probabilities!.entries.map((entry) {
-                          final percentage = (entry.value * 100)
-                              .toStringAsFixed(1);
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: _getColorForProbability(
-                                entry.value,
-                              ).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: _getColorForProbability(
-                                  entry.value,
-                                ).withOpacity(0.3),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: _getColorForProbability(entry.value),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '$percentage%',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Roboto',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _getEventDisplayName(entry.key),
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: 'Roboto',
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      LinearProgressIndicator(
-                                        value: entry.value,
-                                        backgroundColor: Colors.grey[200],
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              _getColorForProbability(
-                                                entry.value,
-                                              ),
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
-
+            // Sonuç gösterimi kaldırıldı
             const SizedBox(height: 24),
 
             // Bilgi kartı

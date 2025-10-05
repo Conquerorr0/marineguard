@@ -8,7 +8,8 @@ plugins {
 android {
     namespace = "com.example.marineguard"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Proje eklentileri NDK 27 istiyor; sabitleyelim
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -28,6 +29,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Manifest placeholder: AndroidManifest.xml içindeki ${MAPS_API_KEY} için
+        manifestPlaceholders["MAPS_API_KEY"] = System.getenv("MAPS_API_KEY") ?: project.findProperty("MAPS_API_KEY") as String? ?: ""
     }
 
     buildTypes {

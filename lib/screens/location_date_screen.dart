@@ -336,110 +336,114 @@ class _LocationDateScreenState extends State<LocationDateScreen>
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Arama çubuğu
-          _buildSearchBar(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Arama çubuğu
+            _buildSearchBar(),
 
-          // Harita
-          Expanded(
-            child: Stack(
-              children: [
-                GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: _cameraLatLng,
-                    zoom: 12,
-                  ),
-                  onMapCreated: (GoogleMapController controller) {
-                    _mapController = controller;
-                  },
-                  onCameraIdle: _onCameraIdle,
-                  myLocationEnabled: false,
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  mapToolbarEnabled: false,
-                ),
-
-                // Merkez pin
-                Center(
-                  child: AnimatedBuilder(
-                    animation: _pinAnimation,
-                    builder: (context, child) {
-                      return Transform.scale(
-                        scale: 1.0 + (_pinAnimation.value * 0.1),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0288D1),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.location_on,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      );
+            // Harita (scroll içinde sabit yükseklik veriyoruz)
+            SizedBox(
+              height: 320,
+              child: Stack(
+                children: [
+                  GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: _cameraLatLng,
+                      zoom: 12,
+                    ),
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController = controller;
                     },
+                    onCameraIdle: _onCameraIdle,
+                    myLocationEnabled: false,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    mapToolbarEnabled: false,
                   ),
-                ),
 
-                // FAB'ler
-                Positioned(
-                  right: 16,
-                  top: 16,
-                  child: Column(
-                    children: [
-                      FloatingActionButton(
-                        mini: true,
-                        onPressed: _isLoadingGeolocate
-                            ? null
-                            : _goToCurrentLocation,
-                        backgroundColor: Colors.white,
-                        child: _isLoadingGeolocate
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                  // Merkez pin
+                  Center(
+                    child: AnimatedBuilder(
+                      animation: _pinAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: 1.0 + (_pinAnimation.value * 0.1),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0288D1),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
-                              )
-                            : const Icon(
-                                Icons.my_location,
-                                color: Color(0xFF0288D1),
-                              ),
-                      ),
-                      const SizedBox(height: 8),
-                      FloatingActionButton(
-                        mini: true,
-                        onPressed: _confirmedLatLng != null
-                            ? _recenterToConfirmed
-                            : null,
-                        backgroundColor: Colors.white,
-                        child: const Icon(
-                          Icons.center_focus_strong,
-                          color: Color(0xFF0288D1),
-                        ),
-                      ),
-                    ],
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
 
-          // Alt sheet
-          _buildBottomSheet(),
-        ],
+                  // FAB'ler
+                  Positioned(
+                    right: 16,
+                    top: 16,
+                    child: Column(
+                      children: [
+                        FloatingActionButton(
+                          mini: true,
+                          onPressed: _isLoadingGeolocate
+                              ? null
+                              : _goToCurrentLocation,
+                          backgroundColor: Colors.white,
+                          child: _isLoadingGeolocate
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.my_location,
+                                  color: Color(0xFF0288D1),
+                                ),
+                        ),
+                        const SizedBox(height: 8),
+                        FloatingActionButton(
+                          mini: true,
+                          onPressed: _confirmedLatLng != null
+                              ? _recenterToConfirmed
+                              : null,
+                          backgroundColor: Colors.white,
+                          child: const Icon(
+                            Icons.center_focus_strong,
+                            color: Color(0xFF0288D1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Alt sheet
+            _buildBottomSheet(),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }

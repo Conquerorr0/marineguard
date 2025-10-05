@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 /// MarineGuard API'sine istekler yapmak için servis sınıfı
 class ProbabilityService {
-  static const String _baseUrl = 'https://your-heroku-app.herokuapp.com';
+  static const String _baseUrl = 'https://marineguard-api.onrender.com';
   static const String _endpoint = '/calculate_probability';
 
   late final Dio _dio;
