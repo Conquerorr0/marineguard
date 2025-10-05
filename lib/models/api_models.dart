@@ -33,11 +33,28 @@ class Metadata {
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
-    totalEvents: (json['total_events'] as num).toInt(),
+    totalEvents:
+        (json['total_events'] as num?)?.toInt() ??
+        // Bazı backend'ler toplam eventi göndermeyebilir; probabilities uzunluğunu kullanmak daha doğru olurdu
+        (json['probabilities'] is Map
+            ? (json['probabilities'] as Map).length
+            : 0),
     syntheticData: (json['synthetic_data'] as bool? ?? false),
-    customThresholds: ((json['custom_thresholds'] as List?) ?? [])
-        .map((e) => e.toString())
-        .toList(),
+    customThresholds: () {
+      final dynamic ct = json['custom_thresholds'];
+      if (ct is List) {
+        return ct.map((e) => e.toString()).toList();
+      }
+      if (ct is Map) {
+        // Örn: {wind_high: 12.5} şeklinde gelirse "wind_high: 12.5" olarak göster
+        return (ct as Map).entries
+            .map((e) => '${e.key}: ${e.value}')
+            .toList()
+            .cast<String>();
+      }
+      // false/null/diğer tipler → boş liste
+      return <String>[];
+    }(),
   );
 }
 

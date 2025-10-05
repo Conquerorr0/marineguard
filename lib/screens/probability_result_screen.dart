@@ -6,6 +6,7 @@ import 'package:marineguard/models/api_models.dart';
 import 'package:marineguard/services/api_client.dart';
 import 'package:marineguard/services/probability_api.dart';
 import 'dart:math';
+import 'package:marineguard/config/env.dart';
 
 class ProbabilityResultScreen extends StatefulWidget {
   final LocationInfo location;
@@ -153,8 +154,14 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      // Hata durumunda mock veriye düş
-      _useMockFallback(error: e.toString());
+      if (ApiConfig.useMockFallback) {
+        _useMockFallback(error: e.toString());
+      } else {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
     }
   }
 
