@@ -242,24 +242,7 @@ class ProbabilityService {
     }
   }
 
-  /// Test amaçlı mock response döndürür
-  Future<Map<String, double>> getMockProbabilities(List<String> events) async {
-    _isLoading = true;
-
-    // Gerçek API çağrısını simüle et
-    await Future.delayed(const Duration(seconds: 1));
-
-    _isLoading = false;
-
-    // Mock response oluştur
-    final mockResponse = <String, double>{};
-    for (final event in events) {
-      // Her olay için rastgele bir olasılık değeri (0.0 - 1.0)
-      mockResponse[event] = (event.hashCode % 100) / 100.0;
-    }
-
-    return mockResponse;
-  }
+  // Mock fonksiyon kaldırıldı
 
   /// Dio instance'ını kapat
   void dispose() {

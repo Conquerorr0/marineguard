@@ -5,7 +5,6 @@ import 'package:lottie/lottie.dart';
 import 'package:marineguard/models/api_models.dart';
 import 'package:marineguard/services/api_client.dart';
 import 'package:marineguard/services/probability_api.dart';
-import 'dart:math';
 import 'package:marineguard/config/env.dart';
 
 class ProbabilityResultScreen extends StatefulWidget {
@@ -154,36 +153,11 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      if (ApiConfig.useMockFallback) {
-        _useMockFallback(error: e.toString());
-      } else {
-        setState(() {
-          _error = e.toString();
-          _loading = false;
-        });
-      }
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
     }
-  }
-
-  void _useMockFallback({String? error}) {
-    final rnd = Random();
-    final mockProb = (rnd.nextInt(100)) / 100.0; // 0.00 - 0.99
-    final mock = CalculateResponse(
-      success: true,
-      location: widget.location,
-      date: widget.date,
-      probabilities: {widget.eventKey: mockProb},
-      metadata: Metadata(
-        totalEvents: 1,
-        syntheticData: true,
-        customThresholds: const [],
-      ),
-    );
-    setState(() {
-      _resp = mock;
-      _loading = false;
-      _error = null; // Hata mesajını temizle ki sonuç ekranı gösterilsin
-    });
   }
 
   @override
@@ -289,33 +263,20 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
                     style: GoogleFonts.roboto(color: Colors.red[700]),
                   ),
                   const SizedBox(height: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          ElevatedButton(
-                            onPressed: _fetch,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0288D1),
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Tekrar Dene'),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Geri Dön'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () => _useMockFallback(error: _error),
-                          child: const Text('Mock ile Devam Et'),
+                      ElevatedButton(
+                        onPressed: _fetch,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0288D1),
+                          foregroundColor: Colors.white,
                         ),
+                        child: const Text('Tekrar Dene'),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Geri Dön'),
                       ),
                     ],
                   ),
@@ -392,16 +353,7 @@ class _ProbabilityResultScreenState extends State<ProbabilityResultScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            if (r.metadata.syntheticData)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Chip(
-                  label: const Text(
-                    'Uyarı: Sentetik veri kullanılmış olabilir',
-                  ),
-                  backgroundColor: Colors.orange[100],
-                ),
-              ),
+            // Sentetik veri uyarısı kaldırıldı
             // Büyük yüzdelik gösterimi
             if (prob == null)
               Card(

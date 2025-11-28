@@ -121,40 +121,6 @@ void main() {
     });
   });
 
-  group('ProbabilityService - Mock Testleri', () {
-    test('Mock response doğru formatta dönmeli', () async {
-      final events = ['wind_high', 'rain_high', 'wave_high'];
-      final result = await service.getMockProbabilities(events);
-
-      // Sonuç null olmamalı
-      expect(result, isNotNull);
-
-      // Her event için değer dönmeli
-      expect(result.keys.length, equals(events.length));
-
-      // Tüm değerler double olmalı ve 0-1 arasında olmalı
-      for (final event in events) {
-        expect(result.containsKey(event), isTrue);
-        expect(result[event], isA<double>());
-        expect(result[event]! >= 0.0 && result[event]! <= 1.0, isTrue);
-      }
-    });
-
-    test('Loading state doğru çalışmalı', () async {
-      expect(service.isLoading, isFalse);
-
-      final future = service.getMockProbabilities(['wind_high']);
-
-      // İstek sırasında loading true olmalı
-      expect(service.isLoading, isTrue);
-
-      await future;
-
-      // İstek tamamlandıktan sonra loading false olmalı
-      expect(service.isLoading, isFalse);
-    });
-  });
-
   group('ProbabilityService - Valid Events', () {
     test('Tüm geçerli event türleri listelenmiş olmalı', () {
       final validEvents = ProbabilityService.validEvents;
